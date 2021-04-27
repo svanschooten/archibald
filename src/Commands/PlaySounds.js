@@ -2,19 +2,22 @@ import play from 'audio-play';
 import load from 'audio-loader';
 import yaml from 'js-yaml';
 import fs from 'fs';
+import { Server } from "../Server.js";
 
 const SOUNDS_LOCATION = './resources/sounds/';
+const MUTE_DURATION = 1000 * 60 * 2;
 
 export class SoundLibrary {
-    _sounds;
+    _sounds = {};
+    _muted = false;
 
     constructor(commandsList) {
-        this._sounds = {};
         const config = yaml.load(fs.readFileSync('./resources/config/sounds.yaml'));
         for (const idx in config.sounds) {
-            // noinspection JSUnfilteredForInLoop
-            let sound = config.sounds[idx];
-            this.addSound(sound.name, sound.response, sound.path, sound.config ?? {});
+            if (config.sounds.hasOwnProperty(idx)) {
+                let sound = config.sounds[idx];
+                this.addSound(sound.name, sound.response, sound.path, sound.config ?? {});
+            }
         }
 
         commandsList.addCommand(
@@ -31,9 +34,26 @@ export class SoundLibrary {
             'What can you play....',
             this
         );
+        commandsList.addCommand(
+            '!!mute',
+            [],
+            this.mute,
+            'Mute all sounds for a while',
+            this
+        );
+        commandsList.addCommand(
+            '!ismute',
+            [],
+            this.isMute,
+            'Are we muted?',
+            this
+        );
     }
 
     play(username, soundName) {
+        if (this._muted) {
+            return;
+        }
         const sound = this._sounds[soundName];
         if (!sound) {
             return `@${username}, I do not know how that sound goes....`
@@ -49,6 +69,25 @@ export class SoundLibrary {
 
     addSound(name, response, path, config) {
         this._sounds[name] = new Sound(name, response, path, config);
+    }
+
+    mute(username) {
+        if (!Server.getInstance().isAdmin(username)) {
+            return `${username} Oh no you don't`;
+        }
+
+        this._setMuted(true);
+        setTimeout(this._setMuted.bind(this, false), MUTE_DURATION);
+
+        return `${username} invoked SILENCE!`;
+    }
+
+    isMute(username) {
+        return `${username} we are ${this._muted ? '' : 'not '}muted`;
+    }
+
+    _setMuted(mute) {
+        this._muted = mute;
     }
 }
 

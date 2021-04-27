@@ -1,15 +1,24 @@
+import { Server } from "../Server.js";
 
 export class CommandList {
-    _commands;
+    _commands = {};
 
     constructor() {
-        this._commands = {};
         this.addCommand('!commands', [], this.getHelp, 'Get me a list of commands', this);
+        this.addCommand('!!commands', [], this.getSudoHelp, 'Get me a list of admin commands', this);
         this.addCommand('!help', ['commandName'], this.getHelpCommand, 'Help me with a command', this);
     }
 
     getHelp(username) {
         return `@${username}, available commands are: ${this.getCommands().join(", ")}`;
+    }
+
+    getSudoHelp(username) {
+        if (!Server.getInstance().isAdmin(username)) {
+            return `${username} Oh no you don't`;
+        }
+
+        return `@${username}, available sudo commands are: ${this.getSudoCommands().join(", ")}`;
     }
 
     getHelpCommand(username, commandName) {
@@ -21,7 +30,15 @@ export class CommandList {
     }
 
     getCommands() {
-        return Object.keys(this._commands);
+        return Object.keys(this._commands).filter(function (name) {
+            return !name.startsWith('!!');
+        });
+    }
+
+    getSudoCommands() {
+        return Object.keys(this._commands).filter(function (name) {
+            return name.startsWith('!!');
+        });
     }
 
     getCommand(name) {

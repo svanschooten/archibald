@@ -1,0 +1,7 @@
+sounds:
+  - name: bruh
+    path: 'bruh.wav'
+    response: 'You what now'
+    config:
+      rate: 1
+      detune: 20

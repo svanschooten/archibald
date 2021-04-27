@@ -1,6 +1,7 @@
 import tmi from 'tmi.js';
 import dotenv from 'dotenv';
 import { CommandList } from './Commands/CommandList.js';
+import { SoundLibrary } from './Commands/PlaySounds.js';
 
 export class Server {
     _commandList;
@@ -26,6 +27,7 @@ export class Server {
         });
 
         this._commandList = new CommandList();
+        this._soundLibrary = new SoundLibrary(this._commandList);
     }
 
     start() {
@@ -38,7 +40,11 @@ export class Server {
             if (!command) {
                 return;
             }
-            this._client.say(channel, command.method.apply(command.context, [tags.username].concat(commandArray)));
+            const result = command.method.apply(command.context, [tags.username].concat(commandArray));
+            if (!result) {
+                return;
+            }
+            this._client.say(channel, result);
         });
     }
 

@@ -1,4 +1,4 @@
 import { Server } from "./src/Server.js";
 
-const server = new Server();
+const server = Server.getInstance();
 server.start();

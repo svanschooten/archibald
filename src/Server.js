@@ -37,11 +37,13 @@ export class Server {
             }
         }
 
+
         this._commandList = new CommandList();
-        this._soundLibrary = new SoundLibrary(this._commandList);
     }
 
     start() {
+        this._soundLibrary = new SoundLibrary();
+
         this._client.connect().catch(console.error);
         this._client.on('message', (channel, tags, message, self) => {
             if(self) return;
@@ -75,9 +77,9 @@ export class Server {
     }
 
     static getInstance() {
-        if (! this._instance) {
-            this._instance = new Server();
+        if (! Server._instance) {
+            Server._instance = new Server();
         }
-        return this._instance;
+        return Server._instance;
     }
 }

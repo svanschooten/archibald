@@ -11,7 +11,7 @@ export class SoundLibrary {
     _sounds = {};
     _muted = false;
 
-    constructor(commandsList) {
+    constructor() {
         const config = yaml.load(fs.readFileSync('./resources/config/sounds.yaml'));
         for (const idx in config.sounds) {
             if (config.sounds.hasOwnProperty(idx)) {
@@ -20,6 +20,7 @@ export class SoundLibrary {
             }
         }
 
+        const commandsList = Server.getInstance().getCommandsList();
         commandsList.addCommand(
             '!playsound',
             ['soundName'],

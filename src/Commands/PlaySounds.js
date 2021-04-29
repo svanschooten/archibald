@@ -11,6 +11,8 @@ const MUTE_DURATION = 1000 * 60 * 2;
 export class SoundLibrary {
     _sounds = {};
     _muted = false;
+    _mutedStartTime = 0;
+    _muteTimeout = null;
 
     constructor() {
         const config = yaml.load(fs.readFileSync('./resources/config/sounds.yaml'));
@@ -25,6 +27,7 @@ export class SoundLibrary {
         commandsList.addCommand('!playsound', ['soundName'],  this.play, 'Plays a sound byte! Noms..', this);
         commandsList.addCommand('!whatsounds', [], this.list, 'What can you play....', this);
         commandsList.addCommand('!!mute', [], this.mute, 'Mute all sounds for a while', this);
+        commandsList.addCommand('!!unmute', [], this.unmute, 'Unmute all weebs again', this);
         commandsList.addCommand('!ismute', [], this.isMute, 'Are we muted?', this);
     }
 
@@ -49,19 +52,37 @@ export class SoundLibrary {
         this._sounds[name] = new Sound(name, response, path, config);
     }
 
-    mute(username) {
+    _doMute(username, muted) {
         if (!Server.getInstance().isAdmin(username)) {
             return `${username} Oh no you don't`;
         }
+        this._setMuted(muted);
+    }
 
-        this._setMuted(true);
-        setTimeout(this._setMuted.bind(this, false), MUTE_DURATION);
+    mute(username) {
+        this._doMute(username, true);
+        this._mutedStartTime = Date.now();
+        this._muteTimeout = setTimeout(this._setMuted.bind(this, false), MUTE_DURATION);
 
         return `${username} invoked SILENCE!`;
     }
 
+    unmute(username) {
+        this._doMute(username, false);
+        if (this._muteTimeout) {
+            clearTimeout(this._muteTimeout);
+            this._muteTimeout = null;
+        }
+    }
+
     isMute(username) {
-        return `${username} we are ${this._muted ? '' : 'not '}muted`;
+        let response = `${username} we are ${this._muted ? '' : 'not '}muted.`;
+        if (this._muted) {
+            const seconds = (new Date(this._mutedStartTime + MUTE_DURATION).getTime() - Date.now()) / 1000;
+            response += ` Still ${Math.round(seconds)} seconds to go`;
+        }
+
+        return response;
     }
 
     _setMuted(mute) {

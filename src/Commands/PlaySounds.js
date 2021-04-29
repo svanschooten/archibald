@@ -11,7 +11,7 @@ const MUTE_DURATION = 1000 * 60 * 2;
 export class SoundLibrary {
     _sounds = {};
     _muted = false;
-    _mutedStartTime = 0;
+    _mutedEndTime = 0;
     _muteTimeout = null;
 
     constructor() {
@@ -52,33 +52,42 @@ export class SoundLibrary {
         this._sounds[name] = new Sound(name, response, path, config);
     }
 
-    _doMute(username, muted) {
+    mute(username) {
         if (!Server.getInstance().isAdmin(username)) {
             return `${username} Oh no you don't`;
         }
-        this._setMuted(muted);
-    }
+        let message;
+        if (this._muted) {
+            this._mutedEndTime = this._mutedEndTime + MUTE_DURATION;
+            message = `${username} took even more breath away`;
+        } else {
+            this._mutedEndTime = Date.now() + MUTE_DURATION;
+            this._setMuted(true);
+            message = `${username} invoked SILENCE!`;
+        }
+        clearTimeout(this._muteTimeout);
+        this._muteTimeout = setTimeout(this._setMuted.bind(this, false), this._mutedEndTime - Date.now());
 
-    mute(username) {
-        this._doMute(username, true);
-        this._mutedStartTime = Date.now();
-        this._muteTimeout = setTimeout(this._setMuted.bind(this, false), MUTE_DURATION);
-
-        return `${username} invoked SILENCE!`;
+        return message;
     }
 
     unmute(username) {
-        this._doMute(username, false);
-        if (this._muteTimeout) {
-            clearTimeout(this._muteTimeout);
-            this._muteTimeout = null;
+        if (!Server.getInstance().isAdmin(username)) {
+            return `${username} Oh no you don't`;
         }
+        if (!this._muted) {
+            return;
+        }
+        this._setMuted(false);
+        clearTimeout(this._muteTimeout);
+
+        return `${username} gave y'all your voice back`;
     }
 
     isMute(username) {
         let response = `${username} we are ${this._muted ? '' : 'not '}muted.`;
         if (this._muted) {
-            const seconds = (new Date(this._mutedStartTime + MUTE_DURATION).getTime() - Date.now()) / 1000;
+            const seconds = (new Date(this._mutedEndTime).getTime() - Date.now()) / 1000;
             response += ` Still ${Math.round(seconds)} seconds to go`;
         }
 

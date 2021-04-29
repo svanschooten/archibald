@@ -18,18 +18,12 @@ export class Server {
 
         this._client = new tmi.Client({
             options: { debug: true, messagesLogLevel: "info" },
-            connection: {
-                reconnect: true,
-                secure: true
-            },
-            identity: {
-                username: process.env.BOT_USERNAME,
-                password: process.env.OAUTH_TOKEN
-            },
+            connection: { reconnect: true, secure: true },
+            identity: { username: process.env.BOT_USERNAME, password: process.env.OAUTH_TOKEN },
             channels: [ process.env.CHANNEL_NAME ]
         });
 
-        const admins = yaml.load(fs.readFileSync('./resources/storage/admins.yaml'));
+        const admins = yaml.load(fs.readFileSync('./resources/config/admins.yaml'));
         for (let idx in admins.admins) {
             if (admins.admins.hasOwnProperty(idx)) {
                 const admin = admins.admins[idx];
@@ -37,23 +31,21 @@ export class Server {
             }
         }
 
-
-        this._commandList = new CommandList();
+        this._commandList = CommandList.getInstance();
     }
 
     start() {
+        // Import all additional commands
         this._soundLibrary = new SoundLibrary();
+
+        // Then import aliases
+        this._commandList.importAliases();
 
         this._client.connect().catch(console.error);
         this._client.on('message', (channel, tags, message, self) => {
             if(self) return;
-            const commandArray = message.toLowerCase().split(' ');
-            const commandPrefix = commandArray.shift();
-            const command = this._commandList.getCommand(commandPrefix);
-            if (!command) {
-                return;
-            }
-            const result = command.method.apply(command.context, [tags.username].concat(commandArray));
+
+            const result = this.handleMessage(message, tags.username);
             if (!result) {
                 return;
             }
@@ -61,12 +53,18 @@ export class Server {
         });
     }
 
-    isAdmin(username) {
-        return this._admins.includes(username.toLowerCase());
+    handleMessage(message, username) {
+        const commandArray = message.toLowerCase().split(' ');
+        const commandPrefix = commandArray.shift();
+        const command = this._commandList.getCommand(commandPrefix);
+        if (!command) {
+            return;
+        }
+        return command.method.apply(command.context, [username].concat(commandArray));
     }
 
-    getCommandsList() {
-        return this._commandList;
+    isAdmin(username) {
+        return this._admins.includes(username.toLowerCase());
     }
 
     addAdmin(username) {

@@ -1,12 +1,22 @@
 import { Server } from "../Server.js";
+import yaml from "js-yaml";
+import fs from "fs";
 
 export class CommandList {
     _commands = {};
+    static _instance = null;
 
     constructor() {
         this.addCommand('!commands', [], this.getHelp, 'Get me a list of commands', this);
         this.addCommand('!!commands', [], this.getSudoHelp, 'Get me a list of admin commands', this);
         this.addCommand('!help', ['commandName'], this.getHelpCommand, 'Help me with a command', this);
+    }
+
+    static getInstance() {
+        if (! CommandList._instance) {
+            CommandList._instance = new CommandList();
+        }
+        return CommandList._instance;
     }
 
     getHelp(username) {
@@ -30,17 +40,25 @@ export class CommandList {
     }
 
     getCommands() {
-        return Object.keys(this._commands).filter(function (name) {
-            return !name.startsWith('!!');
-        });
+        return Object.keys(this._commands).filter(this._isNotSudoCommand.bind(this));
     }
 
     getSudoCommands() {
-        return Object.keys(this._commands).filter(function (name) {
-            return name.startsWith('!!');
-        });
+        return Object.keys(this._commands).filter(this._isSudoCommand.bind(this));
     }
 
+    _isSudoCommand(command) {
+        return command.startsWith('!!');
+    }
+
+    _isNotSudoCommand(command) {
+        return !this._isSudoCommand(command);
+    }
+
+    /**
+     * @param {string} name
+     * @returns {boolean|Command}
+     */
     getCommand(name) {
         if (!this._commands[name]) {
             return false;
@@ -50,6 +68,25 @@ export class CommandList {
 
     addCommand(name, argumentMap, method, helpText, context) {
         this._commands[name] = new Command(name, argumentMap, method, helpText, context);
+    }
+
+    importAliases() {
+        const aliases = yaml.load(fs.readFileSync('./resources/config/aliases.yaml'));
+        for (let idx in aliases.aliases) {
+            if (aliases.aliases.hasOwnProperty(idx)) {
+                const alias = aliases.aliases[idx];
+                const command = this.getCommand(alias.command);
+                this.addCommand(
+                    alias.alias,
+                    command.argumentMap,
+                    function (username, ...otherArgs) {
+                        return command.method.apply(command.context, [username].concat(alias.arguments).concat(otherArgs));
+                    },
+                    command.helpText,
+                    command.context
+                );
+            }
+        }
     }
 }
 

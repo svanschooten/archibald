@@ -3,6 +3,7 @@ import load from 'audio-loader';
 import yaml from 'js-yaml';
 import fs from 'fs';
 import { Server } from "../Server.js";
+import { CommandList } from "./CommandList.js";
 
 const SOUNDS_LOCATION = './resources/sounds/';
 const MUTE_DURATION = 1000 * 60 * 2;
@@ -20,35 +21,11 @@ export class SoundLibrary {
             }
         }
 
-        const commandsList = Server.getInstance().getCommandsList();
-        commandsList.addCommand(
-            '!playsound',
-            ['soundName'],
-            this.play,
-            'Plays a sound byte! Noms..',
-            this
-        );
-        commandsList.addCommand(
-            '!whatsounds',
-            [],
-            this.list,
-            'What can you play....',
-            this
-        );
-        commandsList.addCommand(
-            '!!mute',
-            [],
-            this.mute,
-            'Mute all sounds for a while',
-            this
-        );
-        commandsList.addCommand(
-            '!ismute',
-            [],
-            this.isMute,
-            'Are we muted?',
-            this
-        );
+        const commandsList = CommandList.getInstance();
+        commandsList.addCommand('!playsound', ['soundName'],  this.play, 'Plays a sound byte! Noms..', this);
+        commandsList.addCommand('!whatsounds', [], this.list, 'What can you play....', this);
+        commandsList.addCommand('!!mute', [], this.mute, 'Mute all sounds for a while', this);
+        commandsList.addCommand('!ismute', [], this.isMute, 'Are we muted?', this);
     }
 
     play(username, soundName) {
@@ -61,7 +38,7 @@ export class SoundLibrary {
         }
         load(SOUNDS_LOCATION + sound.path).then(play, sound.config ?? {});
 
-        return `${sound.response}`;
+        return sound.hasOwnProperty('response') ? `${sound.response}` : null;
     }
 
     list(username) {

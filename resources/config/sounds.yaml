@@ -1,4 +1,4 @@
 sounds:
-  - name: bruh
+  - name: 'bruh'
     path: 'bruh.wav'
     response: 'You what now'

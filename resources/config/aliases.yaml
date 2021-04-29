@@ -1,0 +1,7 @@
+aliases:
+  - alias: '!bruh'
+    command: '!playsound'
+    arguments:
+      - 'bruh'
+  - alias: '!silence'
+    command: '!!mute'

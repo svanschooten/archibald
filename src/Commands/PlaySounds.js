@@ -22,18 +22,23 @@ export class SoundLibrary extends Application {
         for (const idx in config.sounds) {
             if (config.sounds.hasOwnProperty(idx)) {
                 let sound = config.sounds[idx];
-                this.addSound(sound.name, sound.response, sound.path, sound.config ?? {});
+                this._addSound(sound.name, sound.response, sound.path, sound.config ?? {});
             }
         }
 
         const commandsList = CommandList.getInstance();
         commandsList.addCommand('!playsound', ['soundName'],  this.play, 'Plays a sound byte! Noms..', this);
         commandsList.addCommand('!whatsounds', [], this.list, 'What can you play....', this);
-        commandsList.addCommand('!!mute', [], this.mute, 'Mute all sounds for a while', this);
+        commandsList.addCommand('!!mute', ['time'], this.mute, 'Mute all sounds for a while', this);
         commandsList.addCommand('!!unmute', [], this.unmute, 'Unmute all weebs again', this);
         commandsList.addCommand('!ismute', [], this.isMute, 'Are we muted?', this);
     }
 
+    /**
+     * @param {string} username
+     * @param {string} soundName
+     * @return {string|null|undefined}
+     */
     play(username, soundName) {
         if (this._muted) {
             return;
@@ -47,24 +52,40 @@ export class SoundLibrary extends Application {
         return sound.hasOwnProperty('response') ? `${sound.response}` : null;
     }
 
+    /**
+     * @param {string} username
+     * @return {string}
+     */
     list(username) {
         return `@${username}, available sounds are: ${Object.keys(this._sounds).join(", ")}`
     }
 
-    addSound(name, response, path, config) {
+    /**
+     * @param name
+     * @param response
+     * @param path
+     * @param config
+     * @private
+     */
+    _addSound(name, response, path, config) {
         this._sounds[name] = new Sound(name, response, path, config);
     }
 
-    mute(username) {
+    /**
+     * @param {string} username
+     * @param {int} time
+     * @return {string}
+     */
+    mute(username, time= MUTE_DURATION) {
         if (!Server.getInstance().isAdmin(username)) {
             return `${username} Oh no you don't`;
         }
         let message;
         if (this._muted) {
-            this._mutedEndTime = this._mutedEndTime + MUTE_DURATION;
+            this._mutedEndTime = this._mutedEndTime + time;
             message = `${username} took even more breath away`;
         } else {
-            this._mutedEndTime = Date.now() + MUTE_DURATION;
+            this._mutedEndTime = Date.now() + time;
             this._setMuted(true);
             message = `${username} invoked SILENCE!`;
         }
@@ -74,6 +95,10 @@ export class SoundLibrary extends Application {
         return message;
     }
 
+    /**
+     * @param {string} username
+     * @return {string|null|undefined}
+     */
     unmute(username) {
         if (!Server.getInstance().isAdmin(username)) {
             return `${username} Oh no you don't`;
@@ -87,6 +112,10 @@ export class SoundLibrary extends Application {
         return `${username} gave y'all your voice back`;
     }
 
+    /**
+     * @param {string} username
+     * @return {string}
+     */
     isMute(username) {
         let response = `${username} we are ${this._muted ? '' : 'not '}muted.`;
         if (this._muted) {
@@ -97,6 +126,10 @@ export class SoundLibrary extends Application {
         return response;
     }
 
+    /**
+     * @param {bool} mute
+     * @private
+     */
     _setMuted(mute) {
         this._muted = mute;
     }

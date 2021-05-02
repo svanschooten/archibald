@@ -66,6 +66,7 @@ export class CommandList {
     /**
      * @param {string} command
      * @returns {boolean}
+     * @private
      */
     _isSudoCommand(command) {
         return command.startsWith('!!');
@@ -74,6 +75,7 @@ export class CommandList {
     /**
      * @param {string} command
      * @returns {boolean}
+     * @private
      */
     _isNotSudoCommand(command) {
         return !this._isSudoCommand(command);

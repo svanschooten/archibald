@@ -4,12 +4,20 @@ import { CommandList } from './Commands/CommandList.js';
 import { SoundLibrary } from './Commands/PlaySounds.js';
 import yaml from 'js-yaml';
 import fs from 'fs';
+import { Dice } from "./Commands/Dice.js";
+
+const APPLICATIONS = [
+    SoundLibrary,
+    Dice
+];
 
 export class Server {
     _commandList = null;
     _client = null;
     _admins = [];
+    _applications = {};
     static _instance = null;
+
 
     constructor() {
         if (process.env.NODE_ENV !== 'production') {
@@ -34,11 +42,9 @@ export class Server {
         this._commandList = CommandList.getInstance();
     }
 
+    /** @return {void} */
     start() {
-        // Import all additional commands
-        this._soundLibrary = new SoundLibrary();
-
-        // Then import aliases
+        this.loadApplications();
         this._commandList.importAliases();
 
         this._client.connect().catch(console.error);
@@ -53,6 +59,11 @@ export class Server {
         });
     }
 
+    /**
+     * @param {string} message
+     * @param {string} username
+     * @return {string|int|bool|null|undefined}
+     **/
     handleMessage(message, username) {
         const commandArray = message.toLowerCase().split(' ');
         const commandPrefix = commandArray.shift();
@@ -63,10 +74,19 @@ export class Server {
         return command.method.apply(command.context, [username].concat(commandArray));
     }
 
+
+    /**
+     * @param {string} username
+     * @return {boolean}
+     **/
     isAdmin(username) {
         return this._admins.includes(username.toLowerCase());
     }
 
+    /**
+     * @param {string} username
+     * @return {int|null|undefined}
+     **/
     addAdmin(username) {
         if (this.isAdmin(username)) {
             return;
@@ -74,10 +94,29 @@ export class Server {
         return this._admins.push(username.toLowerCase());
     }
 
+    /** @returns {Server} */
     static getInstance() {
         if (! Server._instance) {
             Server._instance = new Server();
         }
         return Server._instance;
+    }
+
+    /** @return {void} */
+    loadApplications() {
+        for (let idx in APPLICATIONS) {
+            if (APPLICATIONS.hasOwnProperty(idx)) {
+                const Application = APPLICATIONS[idx];
+                this._applications[Application.name] = new Application();
+            }
+        }
+    }
+
+    /**
+     * @param {string} name
+     * @return {*}
+     */
+    getApplication(name) {
+        return this._applications[name];
     }
 }

@@ -2,3 +2,6 @@ sounds:
   - name: 'bruh'
     path: 'bruh.wav'
     response: 'You what now'
+  - name: 'doit'
+    path: 'senator-palpatine-do-it_1.wav'
+    response: 'I am the senate'

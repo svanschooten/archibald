@@ -12,6 +12,7 @@ export class CommandList {
         this.addCommand('!help', ['commandName'], this.getHelpCommand, 'Help me with a command', this);
     }
 
+    /**  @returns {CommandList} */
     static getInstance() {
         if (! CommandList._instance) {
             CommandList._instance = new CommandList();
@@ -19,10 +20,18 @@ export class CommandList {
         return CommandList._instance;
     }
 
+    /**
+     * @param {string} username
+     * @returns {string}
+     */
     getHelp(username) {
         return `@${username}, available commands are: ${this.getCommands().join(", ")}`;
     }
 
+    /**
+     * @param {string} username
+     * @returns {string}
+     */
     getSudoHelp(username) {
         if (!Server.getInstance().isAdmin(username)) {
             return `${username} Oh no you don't`;
@@ -31,6 +40,11 @@ export class CommandList {
         return `@${username}, available sudo commands are: ${this.getSudoCommands().join(", ")}`;
     }
 
+    /**
+     * @param {string} username
+     * @param {string} commandName
+     * @returns {string}
+     */
     getHelpCommand(username, commandName) {
         let command = this.getCommand(commandName);
         if (!command) {
@@ -39,18 +53,28 @@ export class CommandList {
         return `@${username}, the manual of ${commandName} says: ${command.helpText}. ${ command.argumentMap.length > 0 ? ('It has the following arguments: ' + command.argumentMap.join(', ')) : '' }`
     }
 
+    /** @returns {array<string>} */
     getCommands() {
         return Object.keys(this._commands).filter(this._isNotSudoCommand.bind(this));
     }
 
+    /** @returns {array<string>} */
     getSudoCommands() {
         return Object.keys(this._commands).filter(this._isSudoCommand.bind(this));
     }
 
+    /**
+     * @param {string} command
+     * @returns {boolean}
+     */
     _isSudoCommand(command) {
         return command.startsWith('!!');
     }
 
+    /**
+     * @param {string} command
+     * @returns {boolean}
+     */
     _isNotSudoCommand(command) {
         return !this._isSudoCommand(command);
     }
@@ -66,10 +90,20 @@ export class CommandList {
         return this._commands[name];
     }
 
+    /**
+     * @param {string} name
+     * @param {array<string>} argumentMap
+     * @param {CallableFunction} method
+     * @param {string} helpText
+     * @param {null|object} context
+     */
     addCommand(name, argumentMap, method, helpText, context) {
         this._commands[name] = new Command(name, argumentMap, method, helpText, context);
     }
 
+    /**
+     * @return {void}
+     */
     importAliases() {
         const aliases = yaml.load(fs.readFileSync('./resources/config/aliases.yaml'));
         for (let idx in aliases.aliases) {

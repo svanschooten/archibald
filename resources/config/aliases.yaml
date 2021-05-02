@@ -3,5 +3,9 @@ aliases:
     command: '!playsound'
     arguments:
       - 'bruh'
+  - alias: '!doit'
+    command: '!playsound'
+    arguments:
+      - 'doit'
   - alias: '!silence'
     command: '!!mute'

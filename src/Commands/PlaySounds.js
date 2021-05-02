@@ -4,17 +4,20 @@ import yaml from 'js-yaml';
 import fs from 'fs';
 import { Server } from "../Server.js";
 import { CommandList } from "./CommandList.js";
+import { Application } from "./Application.js";
 
 const SOUNDS_LOCATION = './resources/sounds/';
 const MUTE_DURATION = 1000 * 60 * 2;
 
-export class SoundLibrary {
+export class SoundLibrary extends Application {
     _sounds = {};
     _muted = false;
     _mutedEndTime = 0;
     _muteTimeout = null;
+    static name = 'sound-library';
 
     constructor() {
+        super();
         const config = yaml.load(fs.readFileSync('./resources/config/sounds.yaml'));
         for (const idx in config.sounds) {
             if (config.sounds.hasOwnProperty(idx)) {

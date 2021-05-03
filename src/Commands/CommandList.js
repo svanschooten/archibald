@@ -8,7 +8,7 @@ export class CommandList {
 
     constructor() {
         this.addCommand('!commands', [], this.getHelp, 'Get me a list of commands', this);
-        this.addCommand('!!commands', [], this.getSudoHelp, 'Get me a list of admin commands', this);
+        this.addSudoCommand('!!commands', [], this.getSudoHelp, 'Get me a list of admin commands', this);
         this.addCommand('!help', ['commandName'], this.getHelpCommand, 'Help me with a command', this);
     }
 
@@ -33,10 +33,6 @@ export class CommandList {
      * @returns {string}
      */
     getSudoHelp(username) {
-        if (!Server.getInstance().isAdmin(username)) {
-            return `${username} Oh no you don't`;
-        }
-
         return `@${username}, available sudo commands are: ${this.getSudoCommands().join(", ")}`;
     }
 
@@ -101,6 +97,22 @@ export class CommandList {
      */
     addCommand(name, argumentMap, method, helpText, context) {
         this._commands[name] = new Command(name, argumentMap, method, helpText, context);
+    }
+
+    /**
+     * @param {string} name
+     * @param {array<string>} argumentMap
+     * @param {CallableFunction} method
+     * @param {string} helpText
+     * @param {null|object} context
+     */
+    addSudoCommand(name, argumentMap, method, helpText, context) {
+        this.addCommand(name, argumentMap, (username, ...otherArgs) => {
+            if (!Server.getInstance().isAdmin(username)) {
+                return `${username} Oh no you don't`;
+            }
+            return method.call(context, username, ...otherArgs);
+        }, helpText, context);
     }
 
     /**

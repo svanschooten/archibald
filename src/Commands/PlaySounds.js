@@ -29,8 +29,8 @@ export class SoundLibrary extends Application {
         const commandsList = CommandList.getInstance();
         commandsList.addCommand('!playsound', ['soundName'],  this.play, 'Plays a sound byte! Noms..', this);
         commandsList.addCommand('!whatsounds', [], this.list, 'What can you play....', this);
-        commandsList.addCommand('!!mute', ['time'], this.mute, 'Mute all sounds for a while', this);
-        commandsList.addCommand('!!unmute', [], this.unmute, 'Unmute all weebs again', this);
+        commandsList.addSudoCommand('!!mute', ['time'], this.mute, 'Mute all sounds for a while', this);
+        commandsList.addSudoCommand('!!unmute', [], this.unmute, 'Unmute all weebs again', this);
         commandsList.addCommand('!ismute', [], this.isMute, 'Are we muted?', this);
     }
 
@@ -77,9 +77,6 @@ export class SoundLibrary extends Application {
      * @return {string}
      */
     mute(username, time= MUTE_DURATION) {
-        if (!Server.getInstance().isAdmin(username)) {
-            return `${username} Oh no you don't`;
-        }
         let message;
         if (this._muted) {
             this._mutedEndTime = this._mutedEndTime + time;
@@ -100,9 +97,6 @@ export class SoundLibrary extends Application {
      * @return {string|null|undefined}
      */
     unmute(username) {
-        if (!Server.getInstance().isAdmin(username)) {
-            return `${username} Oh no you don't`;
-        }
         if (!this._muted) {
             return;
         }
@@ -127,7 +121,7 @@ export class SoundLibrary extends Application {
     }
 
     /**
-     * @param {bool} mute
+     * @param {boolean} mute
      * @private
      */
     _setMuted(mute) {

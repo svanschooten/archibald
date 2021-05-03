@@ -26,6 +26,3 @@ export class Dice {
         return `@${username} rolled a ${Math.floor(Math.random() * range) + minValue} with a D${range}${modString ? ` and modifier ${modString} ` : ''}!`;
     }
 }
-
-function rand () {
-}

@@ -1,13 +1,13 @@
 import tmi from 'tmi.js';
 import dotenv from 'dotenv';
 import { CommandList } from './Commands/CommandList.js';
-import { SoundLibrary } from './Commands/PlaySounds.js';
+import { SoundPlayer } from './Applications/PlaySounds.js';
 import yaml from 'js-yaml';
 import fs from 'fs';
-import { Dice } from "./Commands/Dice.js";
+import { Dice } from "./Applications/Dice.js";
 
 const APPLICATIONS = [
-    SoundLibrary,
+    SoundPlayer,
     Dice
 ];
 
@@ -51,7 +51,7 @@ export class Server {
         this._client.on('message', (channel, tags, message, self) => {
             if(self) return;
 
-            const result = this.handleMessage(message, tags.username);
+            const result = this.handleMessage(tags.username, message);
             if (!result) {
                 return;
             }
@@ -60,18 +60,18 @@ export class Server {
     }
 
     /**
-     * @param {string} message
      * @param {string} username
+     * @param {string} message
      * @return {string|int|bool|null|undefined}
      **/
-    handleMessage(message, username) {
+    handleMessage(username, message) {
         const commandArray = message.toLowerCase().split(' ');
         const commandPrefix = commandArray.shift();
         const command = this._commandList.getCommand(commandPrefix);
         if (!command) {
             return;
         }
-        return command.method.apply(command.context, [username].concat(commandArray));
+        return command.call(username, commandArray);
     }
 
 
@@ -106,8 +106,8 @@ export class Server {
     loadApplications() {
         for (let idx in APPLICATIONS) {
             if (APPLICATIONS.hasOwnProperty(idx)) {
-                const Application = APPLICATIONS[idx];
-                this._applications[Application.name] = new Application();
+                const application = APPLICATIONS[idx];
+                this._applications[application.name] = new application();
             }
         }
     }

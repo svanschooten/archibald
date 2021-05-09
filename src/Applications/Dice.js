@@ -1,11 +1,11 @@
-import { CommandList } from "./CommandList.js";
+import {Application} from "./Application.js";
 
-export class Dice {
+export class Dice extends Application {
     static name = 'dice';
 
     constructor() {
-        const commandsList = CommandList.getInstance();
-        commandsList.addCommand('!roll', ['min', 'max'],  this.roll, 'Roll the dice! Min and max default to 1 and 20', this);
+        super();
+        this.addCommand('!roll', ['min', 'max'],  this.roll, 'Roll the dice! Min and max default to 1 and 20', this);
     }
 
     /**

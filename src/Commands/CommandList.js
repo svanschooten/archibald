@@ -1,4 +1,4 @@
-import { Server } from "../Server.js";
+import { Command } from "./Command.js";
 import yaml from "js-yaml";
 import fs from "fs";
 
@@ -6,16 +6,17 @@ export class CommandList {
     _commands = {};
     static _instance = null;
 
-    constructor() {
-        this.addCommand('!commands', [], this.getHelp, 'Get me a list of commands', this);
-        this.addSudoCommand('!!commands', [], this.getSudoHelp, 'Get me a list of admin commands', this);
-        this.addCommand('!help', ['commandName'], this.getHelpCommand, 'Help me with a command', this);
+    _getCommands() {
+        new Command('!commands', [], this.getHelp, 'Get me a list of commands', this).add();
+        new Command('!!commands', [], this.getSudoHelp, 'Get me a list of admin commands', this).add();
+        new Command('!help', ['commandName'], this.getHelpCommand, 'Help me with a command', this).add();
     }
 
     /**  @returns {CommandList} */
     static getInstance() {
         if (! CommandList._instance) {
             CommandList._instance = new CommandList();
+            CommandList._instance._getCommands();
         }
         return CommandList._instance;
     }
@@ -90,29 +91,10 @@ export class CommandList {
 
     /**
      * @param {string} name
-     * @param {array<string>} argumentMap
-     * @param {CallableFunction} method
-     * @param {string} helpText
-     * @param {null|object} context
+     * @param {Command} command
      */
-    addCommand(name, argumentMap, method, helpText, context) {
-        this._commands[name] = new Command(name, argumentMap, method, helpText, context);
-    }
-
-    /**
-     * @param {string} name
-     * @param {array<string>} argumentMap
-     * @param {CallableFunction} method
-     * @param {string} helpText
-     * @param {null|object} context
-     */
-    addSudoCommand(name, argumentMap, method, helpText, context) {
-        this.addCommand(name, argumentMap, (username, ...otherArgs) => {
-            if (!Server.getInstance().isAdmin(username)) {
-                return `${username} Oh no you don't`;
-            }
-            return method.call(context, username, ...otherArgs);
-        }, helpText, context);
+    addCommand(name, command) {
+        this._commands[name] = command;
     }
 
     /**
@@ -124,7 +106,7 @@ export class CommandList {
             if (aliases.aliases.hasOwnProperty(idx)) {
                 const alias = aliases.aliases[idx];
                 const command = this.getCommand(alias.command);
-                this.addCommand(
+                new Command(
                     alias.alias,
                     command.argumentMap,
                     function (username, ...otherArgs) {
@@ -132,24 +114,8 @@ export class CommandList {
                     },
                     command.helpText,
                     command.context
-                );
+                ).add();
             }
         }
-    }
-}
-
-export class Command {
-    name;
-    argumentMap;
-    method;
-    helpText;
-    context;
-
-    constructor(name, argumentMap, method, helpText, context) {
-        this.name = name;
-        this.argumentMap = argumentMap;
-        this.method = method;
-        this.helpText = helpText;
-        this.context = context;
     }
 }

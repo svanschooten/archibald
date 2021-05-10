@@ -5,3 +5,4 @@ sounds:
   - name: 'doit'
     path: 'senator-palpatine-do-it_1.wav'
     response: 'I am the senate'
+location: './resources/sounds/'

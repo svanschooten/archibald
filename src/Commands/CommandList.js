@@ -6,17 +6,16 @@ export class CommandList {
     _commands = {};
     static _instance = null;
 
-    _getCommands() {
-        new Command('!commands', [], this.getHelp, 'Get me a list of commands', this).add();
-        new Command('!!commands', [], this.getSudoHelp, 'Get me a list of admin commands', this).add();
-        new Command('!help', ['commandName'], this.getHelpCommand, 'Help me with a command', this).add();
+    constructor() {
+        this.addCommand('!commands', new Command('!commands', [], this.getHelp, 'Get me a list of commands', this));
+        this.addCommand('!!commands', new Command('!!commands', [], this.getSudoHelp, 'Get me a list of admin commands', this));
+        this.addCommand('!help', new Command('!help', ['commandName'], this.getHelpCommand, 'Help me with a command', this));
     }
 
     /**  @returns {CommandList} */
     static getInstance() {
         if (! CommandList._instance) {
             CommandList._instance = new CommandList();
-            CommandList._instance._getCommands();
         }
         return CommandList._instance;
     }
@@ -97,15 +96,17 @@ export class CommandList {
         this._commands[name] = command;
     }
 
-    /**
-     * @return {void}
-     */
-    importAliases() {
-        const aliases = yaml.load(fs.readFileSync('./resources/config/aliases.yaml'));
+    /** @param {string} aliasConfigPath */
+    importAliases(aliasConfigPath) {
+        const aliases = yaml.load(fs.readFileSync(aliasConfigPath));
         for (let idx in aliases.aliases) {
             if (aliases.aliases.hasOwnProperty(idx)) {
                 const alias = aliases.aliases[idx];
                 const command = this.getCommand(alias.command);
+                if (!command) {
+                    console.error('Alias ' + alias.alias + ' for non-existing command ' + alias.command);
+                    continue;
+                }
                 new Command(
                     alias.alias,
                     command.argumentMap,

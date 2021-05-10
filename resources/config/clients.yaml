@@ -1,0 +1,8 @@
+clients:
+-   constructor: TwitchClient
+    path: './Clients/Twitch.js'
+    config:
+      debug: true
+      username:
+      password:
+      token:

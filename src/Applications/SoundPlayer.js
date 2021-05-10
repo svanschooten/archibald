@@ -4,31 +4,55 @@ import yaml from 'js-yaml';
 import fs from 'fs';
 import { Application } from "./Application.js";
 
-const SOUNDS_LOCATION = './resources/sounds/';
-const MUTE_DURATION = 1000 * 60 * 2;
-
 export class SoundPlayer extends Application {
     _sounds = {};
     _muted = false;
     _mutedEndTime = 0;
     _muteTimeout = null;
-    static name = 'sound-library';
+    _soundConfigPath;
+    _configuration;
+    _mute_duration = 1000 * 60 * 2;
+    _soundsPath = './resources/sounds/';
 
-    constructor() {
+    static defaultSoundConfigPath = './resources/config/sounds.yaml';
+
+    /**
+     * @param {object} config
+     */
+    constructor(config) {
         super();
-        const config = yaml.load(fs.readFileSync('./resources/config/sounds.yaml'));
-        for (const idx in config.sounds) {
-            if (config.sounds.hasOwnProperty(idx)) {
-                let sound = config.sounds[idx];
-                this._addSound(sound.name, sound.response, sound.path, sound.config ?? {});
-            }
+        this._soundsPath = config.paths.sounds;
+        this._soundConfigPath = config.paths.config;
+        if (!fs.existsSync(this._soundConfigPath)) {
+            this._soundConfigPath = SoundPlayer.defaultSoundConfigPath;
         }
+        if (config.hasOwnProperty('mute_duration')) {
+            this._mute_duration = config.mute_duration;
+        }
+
+        this._loadConfiguration();
+        this._loadSounds();
 
         this.addCommand('!playsound', ['soundName'],  this.play, 'Plays a sound byte! Noms..', this);
         this.addCommand('!whatsounds', [], this.list, 'What can you play....', this);
         this.addCommand('!!mute', ['time'], this.mute, 'Mute all sounds for a while', this);
         this.addCommand('!!unmute', [], this.unmute, 'Unmute all weebs again', this);
         this.addCommand('!ismute', [], this.isMute, 'Are we muted?', this);
+    }
+
+    /** @private */
+    _loadConfiguration() {
+        this._configuration = yaml.load(fs.readFileSync(this._soundConfigPath));
+    }
+
+    /** @private */
+    _loadSounds() {
+        for (const idx in this._configuration.sounds) {
+            if (this._configuration.sounds.hasOwnProperty(idx)) {
+                let sound = this._configuration.sounds[idx];
+                this._addSound(sound.name, sound.response, sound.path, sound.config ?? {});
+            }
+        }
     }
 
     /**
@@ -44,7 +68,7 @@ export class SoundPlayer extends Application {
         if (!sound) {
             return `@${username}, I do not know how that sound goes....`
         }
-        load(SOUNDS_LOCATION + sound.path).then(play, sound.config ?? {});
+        load(this._soundsPath + sound.path).then(play, sound.config ?? {});
 
         return sound.hasOwnProperty('response') ? `${sound.response}` : null;
     }
@@ -75,7 +99,7 @@ export class SoundPlayer extends Application {
      */
     mute(username, time) {
         if (time !== parseInt(time, 10)) {
-            time = MUTE_DURATION;
+            time = this._mute_duration;
         }
         let message;
         if (this._muted) {
@@ -136,6 +160,12 @@ class Sound {
     path;
     config;
 
+    /**
+     * @param {string} name
+     * @param {string} response
+     * @param {string} path
+     * @param {object} config
+     */
     constructor(name, response, path, config) {
         this.name = name;
         this.response = response;

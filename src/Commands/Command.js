@@ -28,7 +28,7 @@ export class Command {
     }
 
     add() {
-        CommandList.getInstance().addCommand(this.name, this);
+        Server.getInstance().getCommandsList().addCommand(this.name, this);
     }
 
     call(username, ...otherArgs) {

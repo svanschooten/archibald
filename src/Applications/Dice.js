@@ -1,8 +1,6 @@
 import {Application} from "./Application.js";
 
 export class Dice extends Application {
-    static name = 'dice';
-
     constructor() {
         super();
         this.addCommand('!roll', ['min', 'max'],  this.roll, 'Roll the dice! Min and max default to 1 and 20', this);

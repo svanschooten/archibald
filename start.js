@@ -1,4 +1,14 @@
 import { Server } from "./src/Server.js";
+import dotenv from "dotenv";
 
-const server = Server.getInstance();
+if (process.env.NODE_ENV !== 'production') {
+    dotenv.config();
+}
+
+const server = new Server(
+    Server.defaultAdminConfigPath,
+    Server.defaultApplicationConfigPath,
+    Server.defaultClientConfigPath,
+    Server.defaultAliasesConfigPath
+);
 server.start();

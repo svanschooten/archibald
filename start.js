@@ -9,6 +9,7 @@ const server = new Server(
     Server.defaultAdminConfigPath,
     Server.defaultApplicationConfigPath,
     Server.defaultClientConfigPath,
-    Server.defaultAliasesConfigPath
+    Server.defaultAliasesConfigPath,
+    Server.defaultUiConfigPath
 );
 server.start();

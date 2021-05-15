@@ -2,6 +2,7 @@ import {CommandList} from './Commands/CommandList.js';
 import {Client} from "./Clients/Client.js";
 import yaml from 'js-yaml';
 import fs from 'fs';
+import {UserInterface} from "./UI/UserInterface.js";
 
 export class Server {
     static _instance = null;
@@ -9,6 +10,7 @@ export class Server {
     static defaultApplicationConfigPath = './resources/config/applications.yaml'
     static defaultClientConfigPath = './resources/config/clients.yaml';
     static defaultAliasesConfigPath = './resources/config/aliases.yaml';
+    static defaultUiConfigPath = './resources/config/ui.yaml';
     _commandList = null;
     _admins = [];
     _applications = {};
@@ -16,7 +18,9 @@ export class Server {
     _applicationConfigPath;
     _clientConfigPath;
     _aliasesConfigPath;
+    _uiConfigPath;
     _clients = [];
+    _gui;
 
     /**
      *
@@ -24,12 +28,14 @@ export class Server {
      * @param {string} applicationConfigPath
      * @param {string} clientConfigPath
      * @param {string} aliasesConfigPath
+     * @param {string} uiConfigPath
      */
-    constructor(adminConfigPath, applicationConfigPath, clientConfigPath, aliasesConfigPath) {
+    constructor(adminConfigPath, applicationConfigPath, clientConfigPath, aliasesConfigPath, uiConfigPath) {
         this._adminConfigPath = adminConfigPath;
         this._applicationConfigPath = applicationConfigPath;
         this._clientConfigPath = clientConfigPath;
         this._aliasesConfigPath = aliasesConfigPath;
+        this._uiConfigPath = uiConfigPath;
 
         this._commandList = CommandList.getInstance();
         this.loadAdmins();
@@ -55,6 +61,7 @@ export class Server {
     async start() {
         await this._loadClients();
         await this._loadApplications();
+        await this._loadUI();
         this._commandList.importAliases(this._aliasesConfigPath);
     }
 
@@ -125,6 +132,17 @@ export class Server {
                 console.log('loaded client: ' + client.constructor);
             }
         }
+    }
+
+    /**
+     * @return {void}
+     * @async
+     * @private
+     * */
+    async _loadUI() {
+        const uiConfig = yaml.load(fs.readFileSync(this._uiConfigPath));
+        this._gui = new UserInterface(uiConfig);
+        this._gui.show();
     }
 
     /**

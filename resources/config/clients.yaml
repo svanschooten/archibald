@@ -6,3 +6,5 @@ clients:
       username:
       password:
       token:
+  - constructor: CLIClient
+    path: './Clients/CLI.js'

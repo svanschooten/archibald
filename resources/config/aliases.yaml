@@ -9,3 +9,19 @@ aliases:
       - 'doit'
   - alias: '!silence'
     command: '!!mute'
+  - alias: '!yes'
+    command: '!bet'
+    arguments:
+      - 'yes'
+  - alias: '!no'
+    command: '!bet'
+    arguments:
+      - 'no'
+  - alias: '!mystreak'
+    command: '!bet'
+    arguments:
+      - 'streak'
+  - alias: '!isbet'
+    command: '!bet'
+    arguments:
+      - 'active'

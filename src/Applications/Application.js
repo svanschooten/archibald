@@ -1,6 +1,9 @@
 import {Command} from "../Commands/Command.js";
+import {Server} from "../Server.js";
 
 export class Application {
+    _server;
+
     /**
      * @param {string} name
      * @param {Array<string>} argumentMap
@@ -9,6 +12,7 @@ export class Application {
      * @param {null|object} context
      */
     addCommand(name, argumentMap, method, helpText, context) {
-        new Command(name, argumentMap,  method, helpText, context).add();
+        this._server = Server.getInstance();
+        new Command(name, argumentMap, method, helpText, context).add(this._server);
     }
 }

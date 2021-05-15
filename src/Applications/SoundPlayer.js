@@ -2,9 +2,10 @@ import play from 'audio-play';
 import load from 'audio-loader';
 import yaml from 'js-yaml';
 import fs from 'fs';
-import { Application } from "./Application.js";
+import {Application} from "./Application.js";
 
 export class SoundPlayer extends Application {
+    static defaultSoundConfigPath = './resources/config/sounds.yaml';
     _sounds = {};
     _muted = false;
     _mutedEndTime = 0;
@@ -13,8 +14,6 @@ export class SoundPlayer extends Application {
     _configuration;
     _mute_duration = 1000 * 60 * 2;
     _soundsPath = './resources/sounds/';
-
-    static defaultSoundConfigPath = './resources/config/sounds.yaml';
 
     /**
      * @param {object} config
@@ -33,7 +32,7 @@ export class SoundPlayer extends Application {
         this._loadConfiguration();
         this._loadSounds();
 
-        this.addCommand('!playsound', ['soundName'],  this.play, 'Plays a sound byte! Noms..', this);
+        this.addCommand('!playsound', ['soundName'], this.play, 'Plays a sound byte! Noms..', this);
         this.addCommand('!whatsounds', [], this.list, 'What can you play....', this);
         this.addCommand('!!mute', ['time'], this.mute, 'Mute all sounds for a while', this);
         this.addCommand('!!unmute', [], this.unmute, 'Unmute all weebs again', this);

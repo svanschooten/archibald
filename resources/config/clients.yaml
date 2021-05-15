@@ -1,5 +1,5 @@
 clients:
--   constructor: TwitchClient
+  - constructor: TwitchClient
     path: './Clients/Twitch.js'
     config:
       debug: true

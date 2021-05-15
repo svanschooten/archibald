@@ -3,7 +3,7 @@ import {Application} from "./Application.js";
 export class Dice extends Application {
     constructor() {
         super();
-        this.addCommand('!roll', ['min', 'max'],  this.roll, 'Roll the dice! Min and max default to 1 and 20', this);
+        this.addCommand('!roll', ['min', 'max'], this.roll, 'Roll the dice! Min and max default to 1 and 20', this);
     }
 
     /**

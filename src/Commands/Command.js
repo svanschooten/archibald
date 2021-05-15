@@ -1,5 +1,4 @@
-import { Server } from "../Server.js";
-import { CommandList } from "./CommandList.js";
+import {Server} from "../Server.js";
 
 export class Command {
     name;
@@ -17,6 +16,8 @@ export class Command {
      * @param {null|object} context
      */
     constructor(name, argumentMap, method, helpText, context) {
+        if (name.includes(' ')) throw Error('Commands cannot have spaces in their names');
+
         this.name = name;
         this.argumentMap = argumentMap;
         this.method = method;
@@ -27,11 +28,21 @@ export class Command {
         }
     }
 
-    add() {
+    /** @param {Server|null|undefined} [server] */
+    add(server) {
+        if (server) {
+            server.getCommandsList().addCommand(this.name, this);
+            return;
+        }
         Server.getInstance().getCommandsList().addCommand(this.name, this);
     }
 
-    call(username, ...otherArgs) {
+    /**
+     * @param {string} username
+     * @param {array} otherArgs
+     * @return {string|null}
+     */
+    call(username, otherArgs) {
         if (this.sudo && !Server.getInstance().isAdmin(username)) {
             return `${username} Oh no you don't`;
         }

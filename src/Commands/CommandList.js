@@ -1,10 +1,10 @@
-import { Command } from "./Command.js";
+import {Command} from "./Command.js";
 import yaml from "js-yaml";
 import fs from "fs";
 
 export class CommandList {
-    _commands = {};
     static _instance = null;
+    _commands = {};
 
     constructor() {
         this.addCommand('!commands', new Command('!commands', [], this.getHelp, 'Get me a list of commands', this));
@@ -14,7 +14,7 @@ export class CommandList {
 
     /**  @returns {CommandList} */
     static getInstance() {
-        if (! CommandList._instance) {
+        if (!CommandList._instance) {
             CommandList._instance = new CommandList();
         }
         return CommandList._instance;
@@ -46,7 +46,7 @@ export class CommandList {
         if (!command) {
             return `@${username}, sorry I have no idea what you are thinking of. Try !commands for a list of commands.`;
         }
-        return `@${username}, the manual of ${commandName} says: ${command.helpText}. ${ command.argumentMap.length > 0 ? ('It has the following arguments: ' + command.argumentMap.join(', ')) : '' }`
+        return `@${username}, the manual of ${commandName} says: ${command.helpText}. ${command.argumentMap.length > 0 ? ('It has the following arguments: ' + command.argumentMap.join(', ')) : ''}`
     }
 
     /** @returns {array<string>} */

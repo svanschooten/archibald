@@ -1,5 +1,11 @@
+import {Server} from '../Server.js';
+
 export class Client {
-    async connect() { }
+    /**
+     * @param {Server} server
+     * @return {Promise<void>}
+     */
+    async connect(server) { }
 
     clear() { }
 }

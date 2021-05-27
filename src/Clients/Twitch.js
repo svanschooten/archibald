@@ -1,5 +1,4 @@
 import tmi from "tmi.js";
-import {Server} from "../Server.js";
 import {Client} from './Client.js';
 
 export class TwitchClient extends Client {
@@ -13,13 +12,11 @@ export class TwitchClient extends Client {
     constructor(configuration) {
         super();
         this._configuration = configuration;
-        this._server = Server.getInstance();
-        this._commandsList = this._server.getCommandsList();
         this._channels = this._configuration.channels ?? [process.env.CHANNEL_NAME];
         this._client = new tmi.Client({
             options: {
                 debug: this._configuration.debug,
-                messagesLogLevel: this._configuration.debug ? "info" : "warning"
+                messagesLogLevel: this._configuration.debug ? "debug" : "info"
             },
             connection: {reconnect: true, secure: true},
             identity: {
@@ -30,7 +27,9 @@ export class TwitchClient extends Client {
         });
     }
 
-    async connect() {
+    async connect(server) {
+        this._server = server;
+        this._commandsList = this._server.getCommandsList();
         await this._client.connect();
         this._client.on('message', this._handleMessage.bind(this));
     }

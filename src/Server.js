@@ -108,8 +108,6 @@ export class Server {
         return this._commandList;
     }
 
-
-
     /**
      * @return {void}
      * @async
@@ -147,7 +145,7 @@ export class Server {
                 } else {
                     this._clients[client.constructor] = new clientLoader[client.constructor]();
                 }
-                this._clients[client.constructor].connect();
+                this._clients[client.constructor].connect(this);
                 console.log('loaded client: ' + client.constructor);
             }
         }

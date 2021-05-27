@@ -4,6 +4,8 @@ import chalk from 'chalk';
 import figlet from 'figlet';
 import inquirer from 'inquirer';
 
+const DEFAULT_TIMEOUT = 300;
+
 export class CLIClient extends Client {
     static NAME = 'CLI';
     _color;
@@ -13,16 +15,16 @@ export class CLIClient extends Client {
         super();
 
         this._color = config?.color ?? 'yellow';
-        this._commandsList = Server.getInstance().getCommandsList();
     }
 
-    async connect() {
+    async connect(server) {
+        this._commandsList = server.getCommandsList();
         console.log(
             chalk.yellow(
                 figlet.textSync('Archibald, chat bat', { horizontalLayout: 'full' })
             )
         );
-        this._waitForInput();
+        setTimeout(this._waitForInput.bind(this), DEFAULT_TIMEOUT);
     }
 
     /**
@@ -57,6 +59,6 @@ export class CLIClient extends Client {
             }
         }
 
-        this._waitForInput();
+        setTimeout(this._waitForInput.bind(this), DEFAULT_TIMEOUT);
     }
 }

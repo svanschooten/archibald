@@ -56,7 +56,7 @@ export class TwitchClient extends Client {
         this._client.say(channel, result);
     }
 
-    clearChat() {
+    clear() {
         for (const channel of this._channels) {
             this._client.clear(channel);
         }

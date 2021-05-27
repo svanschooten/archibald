@@ -1,0 +1,5 @@
+builtIns:
+  - type: Text
+    command: '!love'
+    helpText: 'Gimme some heart'
+    template: '@%s aaahw... I love you too!'

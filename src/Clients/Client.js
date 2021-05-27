@@ -1,5 +1,5 @@
 export class Client {
     async connect() { }
 
-    clearChat() { }
+    clear() { }
 }

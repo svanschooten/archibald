@@ -3,6 +3,11 @@ import {Client} from "./Clients/Client.js";
 import yaml from 'js-yaml';
 import fs from 'fs';
 import {UserInterface} from "./UI/UserInterface.js";
+import {TextCommand} from "./Commands/TextCommand.js";
+
+const BUILT_INS = {
+    'Text' : TextCommand
+};
 
 export class Server {
     static _instance = null;
@@ -11,6 +16,7 @@ export class Server {
     static defaultClientConfigPath = './resources/config/clients.yaml';
     static defaultAliasesConfigPath = './resources/config/aliases.yaml';
     static defaultUiConfigPath = './resources/config/ui.yaml';
+    static defaultBuiltInCommandsPath = './resources/config/built-in-commands.yaml';
     _commandList = null;
     _admins = [];
     _applications = {};
@@ -19,6 +25,7 @@ export class Server {
     _clientConfigPath;
     _aliasesConfigPath;
     _uiConfigPath;
+    _builtInCommandsPath;
     _clients = [];
     _gui;
 
@@ -29,13 +36,22 @@ export class Server {
      * @param {string} clientConfigPath
      * @param {string} aliasesConfigPath
      * @param {string} uiConfigPath
+     * @param {string} builtInCommandsPath
      */
-    constructor(adminConfigPath, applicationConfigPath, clientConfigPath, aliasesConfigPath, uiConfigPath) {
+    constructor(
+        adminConfigPath,
+        applicationConfigPath,
+        clientConfigPath,
+        aliasesConfigPath,
+        uiConfigPath,
+        builtInCommandsPath
+    ) {
         this._adminConfigPath = adminConfigPath;
         this._applicationConfigPath = applicationConfigPath;
         this._clientConfigPath = clientConfigPath;
         this._aliasesConfigPath = aliasesConfigPath;
         this._uiConfigPath = uiConfigPath;
+        this._builtInCommandsPath = builtInCommandsPath;
 
         this._commandList = CommandList.getInstance();
         this.loadAdmins();
@@ -59,10 +75,11 @@ export class Server {
 
     /** @return {void} */
     async start() {
-        await this._loadClients();
         await this._loadApplications();
-        await this._loadUI();
+        await this._loadBuiltIns();
+        // await this._loadUI();
         this._commandList.importAliases(this._aliasesConfigPath);
+        await this._loadClients();
     }
 
     /**
@@ -90,6 +107,8 @@ export class Server {
     getCommandsList() {
         return this._commandList;
     }
+
+
 
     /**
      * @return {void}
@@ -130,6 +149,23 @@ export class Server {
                 }
                 this._clients[client.constructor].connect();
                 console.log('loaded client: ' + client.constructor);
+            }
+        }
+    }
+
+    /**
+     * @return {void}
+     * @async
+     * @private
+     * */
+    async _loadBuiltIns() {
+        const {builtIns} = yaml.load(fs.readFileSync(this._builtInCommandsPath));
+        for (let idx in builtIns) {
+            if (builtIns.hasOwnProperty(idx)) {
+                const builtIn = builtIns[idx];
+                const builtInLoader = BUILT_INS[builtIn.type];
+                builtInLoader.create(builtIn);
+                console.log('loaded built-in: ' + builtIn.command);
             }
         }
     }

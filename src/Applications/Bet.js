@@ -101,7 +101,7 @@ export class Bet extends Application {
         const twitchClient = this._server.getClient(TwitchClient.NAME);
         let response = 'Bet is closed!';
         if (twitchClient instanceof TwitchClient) {
-            twitchClient.clearChat();
+            twitchClient.clear();
             response = response + ' And chat has been cleared';
         }
 

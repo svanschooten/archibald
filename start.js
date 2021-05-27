@@ -10,6 +10,7 @@ const server = new Server(
     Server.defaultApplicationConfigPath,
     Server.defaultClientConfigPath,
     Server.defaultAliasesConfigPath,
-    Server.defaultUiConfigPath
+    Server.defaultUiConfigPath,
+    Server.defaultBuiltInCommandsPath
 );
 server.start();
